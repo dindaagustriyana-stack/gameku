@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MPI - Lomba Desain Cangkir</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&amp;family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; overflow: hidden; }
+body { font-family: 'Nunito', sans-serif; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(59,130,246,0.4); }
+  50% { box-shadow: 0 0 40px rgba(59,130,246,0.8); }
+}
+@keyframes bounce-in {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+@keyframes slide-left {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes confetti-fall {
+  0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100%) rotate(720deg); opacity: 0; }
+}
+.animate-fade-up { animation: fadeInUp 0.6s ease-out forwards; }
+.animate-bounce-in { animation: bounce-in 0.5s ease-out forwards; }
+.animate-slide-left { animation: slide-left 0.4s ease-out forwards; }
+.pulse-glow { animation: pulse-glow 2s infinite; }
+.btn-hover { transition: transform 0.2s, box-shadow 0.2s; }
+.btn-hover:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+.btn-hover:active { transform: translateY(0); }
+.screen { display: none; height: 100%; overflow-y: auto; }
+.screen.active { display: flex; flex-direction: column; }
+.tab-active { background: #1e40af; color: white; }
+.drag-word { cursor: grab; user-select: none; }
+.drag-word.dragging { opacity: 0.5; }
+.drop-zone { min-height: 36px; border: 2px dashed #93c5fd; border-radius: 8px; transition: background 0.2s; }
+.drop-zone.over { background: #dbeafe; border-color: #3b82f6; }
+.mark-word { cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: background 0.2s; }
+.mark-word.selected { background: #fbbf24; }
+.mark-word.correct { background: #34d399; }
+.mark-word.incorrect { background: #f87171; }
+.confetti-piece {
+  position: absolute; width: 10px; height: 10px; animation: confetti-fall 3s linear forwards;
+}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 text-white">
+  <div id="app" class="h-full w-full relative overflow-hidden"><!-- HOME BUTTON --> <button id="homeBtn" onclick="navigateTo('menu')" class="hidden fixed top-4 left-4 z-50 bg-blue-600 hover:bg-blue-700 btn-hover text-white p-2 rounded-full shadow-lg" title="Home"> <i data-lucide="home" style="width:20px;height:20px;"></i> </button> <!-- SETTINGS BUTTON --> <button id="settingsBtn" onclick="toggleSettings()" class="hidden fixed top-4 right-4 z-50 bg-blue-600 hover:bg-blue-700 btn-hover text-white p-2 rounded-full shadow-lg" title="Pengaturan"> <i data-lucide="settings" style="width:20px;height:20px;"></i> </button> <!-- SETTINGS PANEL -->
+   <div id="settingsPanel" class="hidden fixed top-16 right-4 z-50 bg-white text-gray-800 rounded-xl p-4 shadow-2xl w-64">
+    <h3 class="font-bold text-lg mb-3">⚙️ Pengaturan</h3>
+    <div class="flex items-center justify-between mb-3"><span class="text-sm font-semibold">Musik Latar</span> <button onclick="toggleMusic()" id="musicToggle" class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs btn-hover">ON</button>
+    </div>
+    <div class="flex items-center justify-between mb-3"><span class="text-sm font-semibold">SFX</span> <button onclick="toggleSfx()" id="sfxToggle" class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs btn-hover">ON</button>
+    </div>
+    <div class="mb-2"><span class="text-sm font-semibold">Volume</span> <input type="range" min="0" max="100" value="70" class="w-full mt-1" oninput="setVolume(this.value)">
+    </div>
+   </div><!-- SPLASH SCREEN -->
+   <div id="splash" class="screen active items-center justify-center text-center p-6">
+    <div class="animate-fade-up">
+     <div class="text-6xl mb-4">
+      🏆
+     </div>
+     <h1 class="text-4xl md:text-5xl font-bold mb-2" style="font-family:'Fredoka',sans-serif;" id="splashTitle">Lomba Membuat Desain Cangkir</h1>
+     <p class="text-xl text-blue-200 mb-1">SMK Kota Cilegon</p>
+     <p class="text-lg text-yellow-300 font-bold mb-1" id="splashTheme">🎯 Tema: Jaya Jaya Jaya</p>
+     <p class="text-sm text-blue-300 mb-6">Tujuan: Menyala 🔥</p><button onclick="navigateTo('menu')" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-xl px-10 py-4 rounded-full btn-hover pulse-glow"> ▶ MULAI </button>
+     <p class="text-xs text-blue-400 mt-6">Pengembang: Tim HAHAHA © 2026</p>
+    </div>
+   </div><!-- MENU UTAMA -->
+   <div id="menu" class="screen items-center justify-center text-center p-6">
+    <h2 class="text-3xl font-bold mb-8" style="font-family:'Fredoka',sans-serif;">Menu Utama</h2>
+    <div class="grid grid-cols-2 gap-4 max-w-md w-full"><button onclick="navigateTo('beranda')" class="bg-blue-500 hover:bg-blue-600 btn-hover p-6 rounded-2xl shadow-lg animate-slide-left" style="animation-delay:0.1s">
+      <div class="text-3xl mb-2">
+       🏠
+      </div><span class="font-bold">BERANDA</span> </button> <button onclick="navigateTo('materi')" class="bg-green-500 hover:bg-green-600 btn-hover p-6 rounded-2xl shadow-lg animate-slide-left" style="animation-delay:0.2s">
+      <div class="text-3xl mb-2">
+       📚
+      </div><span class="font-bold">MATERI</span> </button> <button onclick="navigateTo('simulasi')" class="bg-purple-500 hover:bg-purple-600 btn-hover p-6 rounded-2xl shadow-lg animate-slide-left" style="animation-delay:0.3s">
+      <div class="text-3xl mb-2">
+       🧪
+      </div><span class="font-bold">SIMULASI</span> </button> <button onclick="navigateTo('kuis')" class="bg-orange-500 hover:bg-orange-600 btn-hover p-6 rounded-2xl shadow-lg animate-slide-left" style="animation-delay:0.4s">
+      <div class="text-3xl mb-2">
+       🎮
+      </div><span class="font-bold">KUIS</span> </button>
+    </div>
+   </div><!-- BERANDA -->
+   <div id="beranda" class="screen items-center justify-center text-center p-6">
+    <div class="max-w-lg w-full bg-white/10 backdrop-blur rounded-2xl p-8 animate-fade-up">
+     <h2 class="text-3xl font-bold mb-4" style="font-family:'Fredoka',sans-serif;">🏠 Beranda</h2>
+     <div class="text-left space-y-3 text-blue-100">
+      <p><strong>📌 Kegiatan:</strong> Lomba Membuat Desain Cangkir</p>
+      <p><strong>🎯 Sasaran:</strong> SMK Kota Cilegon</p>
+      <p><strong>🌟 Tema:</strong> Jaya Jaya Jaya</p>
+      <p><strong>🔥 Tujuan:</strong> Menyala</p>
+      <p class="mt-4 text-sm text-blue-300">Media pembelajaran ini dirancang untuk membantu peserta memahami prinsip desain cangkir yang kreatif dan inovatif. Selamat belajar!</p>
+     </div>
+     <p class="text-xs text-blue-400 mt-6">Tim HAHAHA © 2026</p>
+    </div>
+   </div><!-- MATERI -->
+   <div id="materi" class="screen items-center p-6">
+    <div class="max-w-2xl w-full bg-white/10 backdrop-blur rounded-2xl p-6 animate-fade-up mt-12">
+     <h2 class="text-2xl font-bold mb-4 text-center" style="font-family:'Fredoka',sans-serif;">📚 Materi Desain Cangkir</h2>
+     <div class="flex gap-2 mb-4 flex-wrap justify-center"><button onclick="showTab(0)" class="tab-btn px-4 py-2 rounded-full text-sm font-bold bg-blue-600 text-white btn-hover tab-active">Dasar</button> <button onclick="showTab(1)" class="tab-btn px-4 py-2 rounded-full text-sm font-bold bg-blue-600/50 text-blue-200 btn-hover">Elemen</button> <button onclick="showTab(2)" class="tab-btn px-4 py-2 rounded-full text-sm font-bold bg-blue-600/50 text-blue-200 btn-hover">Warna</button> <button onclick="showTab(3)" class="tab-btn px-4 py-2 rounded-full text-sm font-bold bg-blue-600/50 text-blue-200 btn-hover">Teknik</button>
+     </div>
+     <div id="tabContent" class="text-blue-100 text-sm leading-relaxed space-y-3"></div>
+    </div>
+   </div><!-- SIMULASI -->
+   <div id="simulasi" class="screen items-center p-6">
+    <div class="max-w-2xl w-full mt-12 animate-fade-up">
+     <div id="simIntro" class="bg-white/10 backdrop-blur rounded-2xl p-6 text-center">
+      <h2 class="text-2xl font-bold mb-4" style="font-family:'Fredoka',sans-serif;">🧪 Simulasi Uji Pemahaman</h2>
+      <p class="text-blue-200 mb-4">Masukkan nama Anda untuk memulai 10 soal simulasi.</p><input type="text" id="simName" placeholder="Nama Lengkap" class="w-full max-w-xs px-4 py-3 rounded-xl text-gray-900 text-center font-semibold focus:outline-none focus:ring-4 focus:ring-blue-400" autocomplete="off"> <br><button onclick="startSimulation()" class="mt-4 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold px-8 py-3 rounded-full btn-hover">Mulai Simulasi</button>
+     </div>
+     <div id="simQuestions" class="hidden"></div>
+     <div id="simResult" class="hidden bg-white/10 backdrop-blur rounded-2xl p-6 text-center"></div>
+    </div>
+   </div><!-- KUIS -->
+   <div id="kuis" class="screen items-center p-6">
+    <div class="max-w-2xl w-full mt-12 animate-fade-up">
+     <div id="kuisMenu" class="text-center">
+      <h2 class="text-2xl font-bold mb-6" style="font-family:'Fredoka',sans-serif;">🎮 Pilih Game</h2>
+      <div class="grid grid-cols-2 gap-4 max-w-md mx-auto"><button onclick="startGame(1)" class="bg-pink-500 hover:bg-pink-600 btn-hover p-5 rounded-2xl">
+        <div class="text-2xl mb-1">
+         🧩
+        </div><span class="font-bold text-sm">Tebak Istilah</span></button> <button onclick="startGame(2)" class="bg-cyan-500 hover:bg-cyan-600 btn-hover p-5 rounded-2xl">
+        <div class="text-2xl mb-1">
+         ⚡
+        </div><span class="font-bold text-sm">Speed Quiz</span></button> <button onclick="startGame(3)" class="bg-amber-500 hover:bg-amber-600 btn-hover p-5 rounded-2xl">
+        <div class="text-2xl mb-1">
+         🎯
+        </div><span class="font-bold text-sm">Benar/Salah</span></button> <button onclick="startGame(4)" class="bg-emerald-500 hover:bg-emerald-600 btn-hover p-5 rounded-2xl">
+        <div class="text-2xl mb-1">
+         🏆
+        </div><span class="font-bold text-sm">Challenge</span></button>
+      </div>
+     </div>
+     <div id="gameArea" class="hidden"></div>
+    </div>
+   </div><!-- SERTIFIKAT -->
+   <div id="sertifikat" class="screen items-center justify-center p-6">
+    <div id="certContent" class="bg-white text-gray-900 rounded-2xl p-8 max-w-lg w-full text-center shadow-2xl animate-bounce-in relative overflow-hidden">
+     <div id="confettiContainer" class="absolute inset-0 pointer-events-none"></div>
+     <div class="relative z-10">
+      <div class="text-4xl mb-2">
+       🏆
+      </div>
+      <h2 class="text-2xl font-bold text-blue-800" style="font-family:'Fredoka',sans-serif;">SERTIFIKAT PENCAPAIAN</h2>
+      <div class="border-t-2 border-b-2 border-blue-200 my-4 py-4">
+       <p class="text-sm text-gray-500">Diberikan kepada:</p>
+       <p class="text-2xl font-bold text-blue-900 my-2" id="certName">-</p>
+       <p class="text-sm text-gray-600">Telah menyelesaikan simulasi dengan nilai:</p>
+       <p class="text-4xl font-bold text-green-600 my-2" id="certScore">-</p>
+      </div>
+      <p class="text-xs text-gray-500">Lomba Membuat Desain Cangkir | SMK Kota Cilegon</p>
+      <p class="text-xs text-gray-400">Tim HAHAHA © 2026</p>
+     </div>
+    </div><button onclick="navigateTo('menu')" class="mt-4 bg-blue-600 hover:bg-blue-700 btn-hover text-white px-6 py-2 rounded-full font-bold">Kembali ke Menu</button>
+   </div>
+  </div>
+  <script>
+// ===== AUDIO SYSTEM =====
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+let musicEnabled = true;
+let sfxEnabled = true;
+let volume = 0.7;
+let musicInterval = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  return audioCtx;
+}
+
+function playSfx(type) {
+  if (!sfxEnabled) return;
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    gain.gain.value = volume * 0.3;
+    if (type === 'click') { osc.frequency.value = 800; osc.type = 'sine'; gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1); osc.start(); osc.stop(ctx.currentTime + 0.1); }
+    else if (type === 'correct') { osc.frequency.value = 523; osc.type = 'sine'; gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3); osc.start(); setTimeout(() => { const o2 = ctx.createOscillator(); const g2 = ctx.createGain(); o2.connect(g2); g2.connect(ctx.destination); o2.frequency.value = 659; o2.type = 'sine'; g2.gain.value = volume * 0.3; g2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3); o2.start(); o2.stop(ctx.currentTime + 0.3); }, 100); osc.stop(ctx.currentTime + 0.15); }
+    else if (type === 'wrong') { osc.frequency.value = 200; osc.type = 'sawtooth'; gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3); osc.start(); osc.stop(ctx.currentTime + 0.3); }
+    else if (type === 'win') { osc.frequency.value = 440; osc.type = 'sine'; osc.start(); osc.stop(ctx.currentTime + 0.5); }
+  } catch(e) {}
+}
+
+function startMusic() {
+  if (musicInterval) return;
+  musicInterval = setInterval(() => {
+    if (!musicEnabled) return;
+    try {
+      const ctx = getAudioCtx();
+      const notes = [261, 294, 329, 349, 392, 440, 494];
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = notes[Math.floor(Math.random() * notes.length)];
+      osc.type = 'sine';
+      gain.gain.value = volume * 0.05;
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+      osc.start(); osc.stop(ctx.currentTime + 0.8);
+    } catch(e) {}
+  }, 800);
+}
+
+function toggleMusic() {
+  musicEnabled = !musicEnabled;
+  document.getElementById('musicToggle').textContent = musicEnabled ? 'ON' : 'OFF';
+  if (!musicEnabled && musicInterval) { clearInterval(musicInterval); musicInterval = null; }
+  else if (musicEnabled) startMusic();
+  playSfx('click');
+}
+function toggleSfx() { sfxEnabled = !sfxEnabled; document.getElementById('sfxToggle').textContent = sfxEnabled ? 'ON' : 'OFF'; }
+function setVolume(v) { volume = v / 100; }
+function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('hidden'); playSfx('click'); }
+
+// ===== NAVIGATION =====
+function navigateTo(screen) {
+  playSfx('click');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screen).classList.add('active');
+  const showNav = screen !== 'splash';
+  document.getElementById('homeBtn').classList.toggle('hidden', !showNav);
+  document.getElementById('settingsBtn').classList.toggle('hidden', !showNav);
+  document.getElementById('settingsPanel').classList.add('hidden');
+  if (screen === 'menu') startMusic();
+  if (screen === 'materi') showTab(0);
+}
+
+// ===== MATERI TABS =====
+const materiData = [
+  { title: 'Dasar Desain Cangkir', content: '<p><strong>1. Proporsi:</strong> Ukuran badan, pegangan, dan bibir cangkir harus seimbang.</p><p><strong>2. Ergonomi:</strong> Cangkir harus nyaman digenggam dan digunakan.</p><p><strong>3. Fungsi:</strong> Desain harus mempertimbangkan kapasitas cairan (200-350ml).</p><p><strong>4. Estetika:</strong> Bentuk visual yang menarik dan unik sesuai tema.</p><p class="mt-2 text-yellow-300"><strong>💡 Tips:</strong> Mulailah dengan sketsa kasar sebelum mendetailkan desain!</p>' },
+  { title: 'Elemen Desain', content: '<p><strong>1. Garis:</strong> Kontur dan outline yang membentuk siluet cangkir.</p><p><strong>2. Bentuk:</strong> Silinder, kerucut, atau bentuk organik.</p><p><strong>3. Tekstur:</strong> Permukaan halus, matte, glossy, atau bertekstur.</p><p><strong>4. Motif:</strong> Pola dekoratif yang sesuai tema "Jaya Jaya Jaya".</p><p><strong>5. Handle:</strong> Pegangan yang fungsional dan estetis.</p>' },
+  { title: 'Teori Warna', content: '<p><strong>1. Warna Primer:</strong> Merah, Biru, Kuning - dasar kombinasi.</p><p><strong>2. Warna Komplementer:</strong> Warna berlawanan di roda warna untuk kontras.</p><p><strong>3. Warna Analog:</strong> Warna berdekatan untuk harmoni.</p><p><strong>4. Psikologi Warna:</strong> Biru=tenang, Merah=energi, Kuning=ceria.</p><p class="mt-2 text-yellow-300"><strong>💡 Untuk tema "Jaya Jaya Jaya":</strong> Gunakan warna emas/kuning yang melambangkan kejayaan!</p>' },
+  { title: 'Teknik Finishing', content: '<p><strong>1. Glazing:</strong> Pelapisan mengkilap untuk perlindungan dan estetika.</p><p><strong>2. Decal:</strong> Transfer gambar pada permukaan cangkir.</p><p><strong>3. Hand Painting:</strong> Lukisan tangan untuk keunikan.</p><p><strong>4. Emboss/Deboss:</strong> Teknik cetak timbul/cetak dalam.</p><p><strong>5. Screen Printing:</strong> Cetak sablon untuk produksi massal.</p>' }
+];
+
+function showTab(idx) {
+  const btns = document.querySelectorAll('.tab-btn');
+  btns.forEach((b, i) => { b.classList.toggle('tab-active', i === idx); b.classList.toggle('bg-blue-600/50', i !== idx); b.classList.toggle('text-blue-200', i !== idx); });
+  document.getElementById('tabContent').innerHTML = `<h3 class="text-lg font-bold text-yellow-300">${materiData[idx].title}</h3>${materiData[idx].content}`;
+}
+
+// ===== SIMULASI =====
+const simQuestions = [
+  { type: 'pg', q: 'Kapasitas ideal cangkir standar adalah?', opts: ['100ml', '200-350ml', '500ml', '1 liter'], ans: 1 },
+  { type: 'pg', q: 'Teknik pelapisan mengkilap pada cangkir disebut?', opts: ['Decal', 'Emboss', 'Glazing', 'Sablon'], ans: 2 },
+  { type: 'pg', q: 'Warna yang melambangkan kejayaan adalah?', opts: ['Hitam', 'Emas/Kuning', 'Abu-abu', 'Putih'], ans: 1 },
+  { type: 'drag', q: 'Lengkapi: Desain cangkir harus memperhatikan ___ dan fungsi.', word: 'estetika', options: ['estetika', 'harga', 'berat'] },
+  { type: 'drag', q: 'Teknik ___ menghasilkan tekstur timbul pada cangkir.', word: 'emboss', options: ['emboss', 'glazing', 'sablon'] },
+  { type: 'pg', q: 'Elemen desain yang membentuk siluet cangkir adalah?', opts: ['Warna', 'Garis', 'Tekstur', 'Volume'], ans: 1 },
+  { type: 'mark', q: 'Tandai kata yang termasuk elemen desain:', text: 'Membuat cangkir memerlukan garis bentuk tekstur dan warna yang sesuai', answers: ['garis', 'bentuk', 'tekstur', 'warna'] },
+  { type: 'pg', q: 'Warna komplementer adalah warna yang?', opts: ['Berdekatan', 'Berlawanan di roda warna', 'Sama persis', 'Tidak ada hubungan'], ans: 1 },
+  { type: 'mark', q: 'Tandai teknik finishing cangkir:', text: 'Proses finishing meliputi glazing emboss decal dan hand painting untuk hasil maksimal', answers: ['glazing', 'emboss', 'decal', 'painting'] },
+  { type: 'pg', q: 'Psikologi warna biru melambangkan?', opts: ['Energi', 'Ketenangan', 'Keceriaan', 'Kemewahan'], ans: 1 }
+];
+
+let simState = { current: 0, score: 0, name: '', answers: [] };
+
+function startSimulation() {
+  const name = document.getElementById('simName').value.trim();
+  if (!name) { document.getElementById('simName').focus(); return; }
+  simState = { current: 0, score: 0, name, answers: [] };
+  document.getElementById('simIntro').classList.add('hidden');
+  document.getElementById('simQuestions').classList.remove('hidden');
+  renderSimQuestion();
+  playSfx('click');
+}
+
+function renderSimQuestion() {
+  const q = simQuestions[simState.current];
+  const container = document.getElementById('simQuestions');
+  let html = `<div class="bg-white/10 backdrop-blur rounded-2xl p-6"><p class="text-xs text-blue-300 mb-2">Soal ${simState.current + 1}/10</p><p class="font-bold text-lg mb-4">${q.q}</p>`;
+
+  if (q.type === 'pg') {
+    html += `<div class="space-y-2">${q.opts.map((o, i) => `<button onclick="answerSim('pg',${i})" class="w-full text-left bg-white/10 hover:bg-blue-500/50 btn-hover p-3 rounded-xl transition">${String.fromCharCode(65+i)}. ${o}</button>`).join('')}</div>`;
+  } else if (q.type === 'drag') {
+    html += `<div class="flex flex-wrap gap-2 mb-4">${q.options.map(w => `<span class="drag-word bg-yellow-400 text-gray-900 px-3 py-1 rounded-full font-bold text-sm" draggable="true" ondragstart="event.dataTransfer.setData('text','${w}')">${w}</span>`).join('')}</div>`;
+    html += `<div class="drop-zone p-3 text-center text-blue-300 text-sm" ondrop="handleDrop(event,'${q.word}')" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')">Seret jawaban ke sini</div>`;
+  } else if (q.type === 'mark') {
+    const words = q.text.split(' ');
+    html += `<div class="flex flex-wrap gap-1" id="markArea">${words.map(w => `<span class="mark-word bg-white/20 px-2 py-1 rounded text-sm" onclick="toggleMark(this,'${w}')">${w}</span>`).join('')}</div>`;
+    html += `<button onclick="submitMark()" class="mt-4 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold px-6 py-2 rounded-full btn-hover">Periksa</button>`;
+  }
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function answerSim(type, val) {
+  const q = simQuestions[simState.current];
+  const correct = (q.ans === val);
+  if (correct) { simState.score++; playSfx('correct'); } else playSfx('wrong');
+  nextSimQuestion();
+}
+
+function handleDrop(e, correctWord) {
+  e.preventDefault();
+  const word = e.dataTransfer.getData('text');
+  if (word === correctWord) { simState.score++; playSfx('correct'); } else playSfx('wrong');
+  nextSimQuestion();
+}
+
+let markedWords = [];
+function toggleMark(el, word) {
+  el.classList.toggle('selected');
+  if (markedWords.includes(word)) markedWords = markedWords.filter(w => w !== word);
+  else markedWords.push(word);
+  playSfx('click');
+}
+
+function submitMark() {
+  const q = simQuestions[simState.current];
+  const correct = q.answers.every(a => markedWords.some(m => m.toLowerCase().includes(a.toLowerCase())));
+  if (correct) { simState.score++; playSfx('correct'); } else playSfx('wrong');
+  markedWords = [];
+  nextSimQuestion();
+}
+
+function nextSimQuestion() {
+  simState.current++;
+  if (simState.current >= 10) finishSimulation();
+  else setTimeout(renderSimQuestion, 500);
+}
+
+async function finishSimulation() {
+  const score = simState.score * 10;
+  document.getElementById('simQuestions').classList.add('hidden');
+  document.getElementById('simResult').classList.remove('hidden');
+  document.getElementById('simResult').innerHTML = `<h3 class="text-2xl font-bold mb-2">Selesai! 🎉</h3><p class="text-lg">Skor Anda: <strong class="text-yellow-300 text-3xl">${score}/100</strong></p><button onclick="showCertificate('${simState.name}',${score})" class="mt-4 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold px-6 py-2 rounded-full btn-hover">Lihat Sertifikat</button>`;
+
+  // Save to Data SDK
+  if (window.dataSdk) {
+    await window.dataSdk.create({
+      student_name: simState.name,
+      quiz_score: 0,
+      simulation_score: score,
+      completed_at: new Date().toISOString()
+    });
+  }
+  playSfx('win');
+}
+
+function showCertificate(name, score) {
+  document.getElementById('certName').textContent = name;
+  document.getElementById('certScore').textContent = score + '/100';
+  navigateTo('sertifikat');
+  spawnConfetti();
+}
+
+function spawnConfetti() {
+  const container = document.getElementById('confettiContainer');
+  container.innerHTML = '';
+  const colors = ['#f59e0b','#3b82f6','#10b981','#ef4444','#8b5cf6'];
+  for (let i = 0; i < 30; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = Math.random() * 2 + 's';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+    container.appendChild(piece);
+  }
+}
+
+// ===== KUIS GAMES =====
+const gameData = {
+  1: [
+    { q: 'Pelapisan mengkilap pada keramik?', a: 'glazing', hints: ['g_____g'] },
+    { q: 'Pegangan pada cangkir?', a: 'handle', hints: ['h____e'] },
+    { q: 'Teknik cetak timbul?', a: 'emboss', hints: ['e____s'] },
+    { q: 'Seni melukis tangan?', a: 'hand painting', hints: ['h___ p______g'] },
+    { q: 'Transfer gambar ke permukaan?', a: 'decal', hints: ['d___l'] }
+  ],
+  2: [
+    { q: 'Warna primer: Merah, Biru, dan...?', opts: ['Hijau','Kuning','Ungu','Oranye'], ans: 1 },
+    { q: 'Bentuk dasar cangkir umumnya?', opts: ['Kubus','Silinder','Piramida','Prisma'], ans: 1 },
+    { q: 'Finishing glossy membuat permukaan?', opts: ['Kasar','Mengkilap','Berbulu','Berlubang'], ans: 1 },
+    { q: 'Ergonomi berkaitan dengan?', opts: ['Warna','Kenyamanan','Harga','Berat'], ans: 1 },
+    { q: 'Tema lomba ini adalah?', opts: ['Merdeka','Jaya Jaya Jaya','Semangat','Bersatu'], ans: 1 }
+  ],
+  3: [
+    { q: 'Cangkir harus memiliki handle.', a: false },
+    { q: 'Glazing adalah teknik pelapisan.', a: true },
+    { q: 'Warna biru melambangkan energi.', a: false },
+    { q: 'Emboss menghasilkan tekstur timbul.', a: true },
+    { q: 'Kapasitas standar cangkir adalah 1 liter.', a: false }
+  ],
+  4: [
+    { q: 'Sebutkan 3 elemen desain!', a: ['garis','bentuk','tekstur','warna','motif'], need: 3 },
+    { q: 'Sebutkan 2 teknik finishing!', a: ['glazing','emboss','decal','sablon','hand painting'], need: 2 },
+    { q: 'Sebutkan 2 jenis warna!', a: ['primer','komplementer','analog','sekunder'], need: 2 },
+    { q: 'Sebutkan 2 aspek desain cangkir!', a: ['proporsi','ergonomi','estetika','fungsi'], need: 2 },
+    { q: 'Sebutkan 2 bentuk cangkir!', a: ['silinder','kerucut','organik','oval'], need: 2 }
+  ]
+};
+
+let gameState = { type: 0, level: 0, score: 0 };
+
+function startGame(type) {
+  gameState = { type, level: 0, score: 0 };
+  document.getElementById('kuisMenu').classList.add('hidden');
+  document.getElementById('gameArea').classList.remove('hidden');
+  renderGame();
+  playSfx('click');
+}
+
+function renderGame() {
+  const area = document.getElementById('gameArea');
+  const data = gameData[gameState.type][gameState.level];
+  const levelLabel = `Level ${gameState.level + 1}/5`;
+  let html = `<div class="bg-white/10 backdrop-blur rounded-2xl p-6"><p class="text-xs text-blue-300 mb-1">${levelLabel} | Skor: ${gameState.score}</p>`;
+
+  if (gameState.type === 1) {
+    html += `<p class="font-bold text-lg mb-2">${data.q}</p><p class="text-blue-300 text-sm mb-3">Petunjuk: ${data.hints[0]}</p>`;
+    html += `<input type="text" id="gameInput" class="w-full px-4 py-3 rounded-xl text-gray-900 font-semibold focus:outline-none focus:ring-4 focus:ring-blue-400" placeholder="Ketik jawaban..." autocomplete="off">`;
+    html += `<button onclick="checkGameAnswer()" class="mt-3 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold px-6 py-2 rounded-full btn-hover">Jawab</button>`;
+  } else if (gameState.type === 2) {
+    html += `<p class="font-bold text-lg mb-4">${data.q}</p><div class="space-y-2">${data.opts.map((o, i) => `<button onclick="checkSpeed(${i})" class="w-full text-left bg-white/10 hover:bg-blue-500/50 btn-hover p-3 rounded-xl">${o}</button>`).join('')}</div>`;
+  } else if (gameState.type === 3) {
+    html += `<p class="font-bold text-lg mb-4">${data.q}</p><div class="flex gap-4 justify-center"><button onclick="checkTF(true)" class="bg-green-500 hover:bg-green-600 btn-hover px-8 py-3 rounded-xl font-bold">BENAR</button><button onclick="checkTF(false)" class="bg-red-500 hover:bg-red-600 btn-hover px-8 py-3 rounded-xl font-bold">SALAH</button></div>`;
+  } else if (gameState.type === 4) {
+    html += `<p class="font-bold text-lg mb-2">${data.q}</p><p class="text-blue-300 text-sm mb-3">Ketik ${data.need} jawaban (pisahkan koma)</p>`;
+    html += `<input type="text" id="gameInput" class="w-full px-4 py-3 rounded-xl text-gray-900 font-semibold focus:outline-none focus:ring-4 focus:ring-blue-400" placeholder="jawaban1, jawaban2" autocomplete="off">`;
+    html += `<button onclick="checkChallenge()" class="mt-3 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold px-6 py-2 rounded-full btn-hover">Jawab</button>`;
+  }
+  html += '</div>';
+  area.innerHTML = html;
+}
+
+function checkGameAnswer() {
+  const input = document.getElementById('gameInput').value.trim().toLowerCase();
+  const data = gameData[1][gameState.level];
+  if (input === data.a) { gameState.score++; playSfx('correct'); } else playSfx('wrong');
+  advanceGame();
+}
+function checkSpeed(idx) {
+  if (idx === gameData[2][gameState.level].ans) { gameState.score++; playSfx('correct'); } else playSfx('wrong');
+  advanceGame();
+}
+function checkTF(val) {
+  if (val === gameData[3][gameState.level].a) { gameState.score++; playSfx('correct'); } else playSfx('wrong');
+  advanceGame();
+}
+function checkChallenge() {
+  const input = document.getElementById('gameInput').value.toLowerCase().split(',').map(s => s.trim());
+  const data = gameData[4][gameState.level];
+  const matched = input.filter(i => data.a.some(a => i.includes(a))).length;
+  if (matched >= data.need) { gameState.score++; playSfx('correct'); } else playSfx('wrong');
+  advanceGame();
+}
+
+function advanceGame() {
+  gameState.level++;
+  if (gameState.level >= 5) {
+    document.getElementById('gameArea').innerHTML = `<div class="bg-white/10 backdrop-blur rounded-2xl p-6 text-center"><h3 class="text-2xl font-bold mb-2">Game Selesai! 🎉</h3><p>Skor: <strong class="text-yellow-300 text-3xl">${gameState.score}/5</strong></p><button onclick="backToKuisMenu()" class="mt-4 bg-blue-500 hover:bg-blue-600 btn-hover text-white px-6 py-2 rounded-full font-bold">Kembali</button></div>`;
+    playSfx('win');
+  } else setTimeout(renderGame, 400);
+}
+
+function backToKuisMenu() {
+  document.getElementById('kuisMenu').classList.remove('hidden');
+  document.getElementById('gameArea').classList.add('hidden');
+}
+
+// ===== DATA SDK =====
+let allRecords = [];
+const dataHandler = {
+  onDataChanged(data) { allRecords = data; }
+};
+
+// ===== ELEMENT SDK =====
+const defaultConfig = {
+  main_title: 'Lomba Membuat Desain Cangkir',
+  theme_text: 'Jaya Jaya Jaya',
+  background_color: '#1e3a8a',
+  surface_color: '#1e40af',
+  text_color: '#ffffff',
+  accent_color: '#facc15',
+  secondary_action_color: '#3b82f6'
+};
+
+function applyConfig(config) {
+  const title = config.main_title || defaultConfig.main_title;
+  const theme = config.theme_text || defaultConfig.theme_text;
+  document.getElementById('splashTitle').textContent = title;
+  document.getElementById('splashTheme').textContent = '🎯 Tema: ' + theme;
+
+  const bg = config.background_color || defaultConfig.background_color;
+  const surface = config.surface_color || defaultConfig.surface_color;
+  const text = config.text_color || defaultConfig.text_color;
+  const accent = config.accent_color || defaultConfig.accent_color;
+  const action = config.secondary_action_color || defaultConfig.secondary_action_color;
+
+  document.body.style.background = `linear-gradient(135deg, ${bg}, ${surface}, ${bg})`;
+  document.body.style.color = text;
+
+  const font = config.font_family || 'Nunito';
+  const size = config.font_size || 16;
+  document.body.style.fontFamily = `${font}, Nunito, sans-serif`;
+  document.body.style.fontSize = size + 'px';
+}
+
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => { applyConfig(config); },
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+      { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+      { get: () => config.secondary_action_color || defaultConfig.secondary_action_color, set: (v) => { config.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); } }
+    ],
+    borderables: [],
+    fontEditable: { get: () => config.font_family || defaultConfig.font_family || 'Nunito', set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+    fontSizeable: { get: () => config.font_size || defaultConfig.font_size || 16, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['main_title', config.main_title || defaultConfig.main_title],
+    ['theme_text', config.theme_text || defaultConfig.theme_text]
+  ])
+});
+
+// Init Data SDK
+(async () => {
+  if (window.dataSdk) {
+    await window.dataSdk.init(dataHandler);
+  }
+})();
+
+// Init Lucide
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9fe072b57490ef6d',t:'MTc3OTE2NTg4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
